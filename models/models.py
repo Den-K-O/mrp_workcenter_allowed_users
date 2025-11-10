@@ -19,26 +19,26 @@ class MrpWorkOrder(models.Model):
     _inherit = "mrp.workorder"
 
     def button_start(self):
-        if self.env.user not in self.workcenter_id.allowed_user_ids:
-            raise UserError("Немає доступу до робочого центру")
+        if self.workcenter_id and self.env.user not in self.workcenter_id.allowed_user_ids:
+            raise UserError(f"Немає доступу до робочого центру {self.workcenter_id.name}: button_start")
             return
         super().button_start()
 
     def button_finish(self):
-        if self.env.user not in self.workcenter_id.allowed_user_ids:
-            raise UserError("Немає доступу до робочого центру")
+        if self.workcenter_id and self.env.user not in self.workcenter_id.allowed_user_ids:
+            raise UserError(f"Немає доступу до робочого центру {self.workcenter_id.name}: button_finish")
             return
         super().button_finish()
 
     def button_pending(self):
-        if self.env.user not in self.workcenter_id.allowed_user_ids:
-            raise UserError("Немає доступу до робочого центру")
+        if self.workcenter_id and self.env.user not in self.workcenter_id.allowed_user_ids:
+            raise UserError(f"Немає доступу до робочого центру {self.workcenter_id.name}: button_pending")
             return
         super().button_pending()
     
     def button_unblock(self):
-        if self.env.user not in self.workcenter_id.allowed_user_ids:
-            raise UserError("Немає доступу до робочого центру")
+        if self.workcenter_id and self.env.user not in self.workcenter_id.allowed_user_ids:
+            raise UserError(f"Немає доступу до робочого центру {self.workcenter_id.name}: button_unblock")
             return
         super().button_unblock()
 
@@ -53,15 +53,15 @@ class MrpWorkcenterProductivity(models.Model):
             if workcenter_id:
                 workcenter = self.env['mrp.workcenter'].browse(workcenter_id)
                 if self.env.user not in workcenter.allowed_user_ids:
-                    raise UserError("Немає доступу до блокування робочого центру")
+                    raise UserError(f"Немає доступу до блокування робочого центру {self.workcenter_id.name}: create")
         return super().create(vals_list)
 
     def button_block(self):
         self.ensure_one()
-        if self.env.user not in self.workcenter_id.allowed_user_ids:
+        if self.workcenter_id and self.env.user not in self.workcenter_id.allowed_user_ids:
             # Optional: clean up the wizard record
             self.unlink()
-            raise UserError("Немає доступу до блокування робочого центру")
+            raise UserError(f"Немає доступу до блокування робочого центру {self.workcenter_id.name}: button_block")
         
         # Continue with the normal behavior
         self.workcenter_id.order_ids.end_all()
