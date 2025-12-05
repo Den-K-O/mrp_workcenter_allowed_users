@@ -52,8 +52,8 @@ class MrpWorkcenterProductivity(models.Model):
             workcenter_id = vals.get("workcenter_id")
             if workcenter_id:
                 workcenter = self.env['mrp.workcenter'].browse(workcenter_id)
-                if self.env.user not in workcenter.allowed_user_ids:
-                    raise UserError(f"Немає доступу до блокування робочого центру {self.workcenter_id.name}: create")
+                if workcenter and self.env.user not in workcenter.allowed_user_ids:
+                    raise UserError(f"Немає доступу до блокування робочого центру {workcenter.name}: create")
         return super().create(vals_list)
 
     def button_block(self):
