@@ -20,4 +20,19 @@
         </field>
     </record>
 
+    <record id="view_mrp_workorder_tree_inherit" model="ir.ui.view">
+        <field name="name">mrp.production.work.order.tree.inherit.qty</field>
+        <field name="model">mrp.workorder</field>
+        <field name="inherit_id" ref="mrp.mrp_production_workorder_tree_view" />
+        <field name="arch" type="xml">
+            <field name="workcenter_id" position="after">
+                <field name="allowed_user_ids" invisible="1"/>
+                <field name="worker"
+                    class="worker_main"
+                    options="{'no_create': True, 'no_create_edit': True}"
+                />
+            </field>
+        </field>
+    </record>
+
 </odoo>

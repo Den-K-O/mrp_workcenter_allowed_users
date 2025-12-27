@@ -4,6 +4,7 @@
 
 from odoo import fields, models, api
 from odoo.exceptions import UserError
+from lxml import etree
 
 
 class MrpWorkcenter(models.Model):
@@ -17,6 +18,17 @@ class MrpWorkcenter(models.Model):
 
 class MrpWorkOrder(models.Model):
     _inherit = "mrp.workorder"
+
+    allowed_user_ids = fields.Many2many(
+        'res.users',
+        related='workcenter_id.allowed_user_ids',
+        readonly=True,
+    )
+
+    worker = fields.Many2one(
+        "res.users",
+        "Worker", 
+    )
 
     def button_start(self):
         if self.workcenter_id and self.env.user not in self.workcenter_id.allowed_user_ids:
@@ -41,6 +53,66 @@ class MrpWorkOrder(models.Model):
             raise UserError(f"Немає доступу до робочого центру {self.workcenter_id.name}: button_unblock")
             return
         super().button_unblock()
+    
+    @api.model
+    def _fields_view_get(self, view_id=None, view_type='form', toolbar=False, submenu=False):
+        res = super()._fields_view_get(view_id, view_type, toolbar, submenu)
+
+        if view_type not in ('tree', 'form'):
+            return res
+
+        user = self.env.user
+        is_manager = user.has_group('mrp.group_mrp_manager')
+
+        doc = etree.XML(res['arch'])
+
+        for node in doc.xpath("//field[@class='worker_main']"):
+
+            if is_manager:
+                # Managers: full access
+                node.set('domain', "[('id', 'in', allowed_user_ids)]")
+
+            else:
+                # Employees: only self
+                node.set('domain', "[('id', '=', uid), ('id', 'in', allowed_user_ids)]")
+
+                # Readonly if already set to another user, or the current user is not in the allowed users list
+                node.set(
+                    'attrs', str({
+                         'readonly': [
+                            '|',
+                            # Case A: already set to another user
+                            '&',
+                            ('worker', '!=', False),
+                            ('worker', '!=', user.id),
+
+                            # Case B: empty but user not allowed
+                            '&',
+                            ('worker', '=', False),
+                            ('allowed_user_ids', 'not in', [user.id]),
+                        ]
+                    })
+                )
+        
+        for node in doc.xpath("//field[@name='workcenter_id']"):
+            if not is_manager:
+                node.set(
+                        'attrs', str({
+                            'readonly': True
+                        })
+                    )
+        
+        for node in doc.xpath("//field[@name='name']"):
+            if not is_manager:
+                node.set(
+                        'attrs', str({
+                            'readonly': True
+                        })
+                    )
+
+        res['arch'] = etree.tostring(doc, encoding='unicode')
+        print(res['arch'])
+        return res
 
 
 class MrpWorkcenterProductivity(models.Model):
@@ -65,3 +137,31 @@ class MrpWorkcenterProductivity(models.Model):
         
         # Continue with the normal behavior
         self.workcenter_id.order_ids.end_all()
+
+
+class MrpProduction(models.Model):
+    _inherit = "mrp.production"
+
+    @api.model
+    def _fields_view_get(self, view_id=None, view_type='form', toolbar=False, submenu=False):
+        res = super()._fields_view_get(view_id, view_type, toolbar, submenu)
+
+        if view_type not in ('tree', 'form'):
+            return res
+
+        user = self.env.user
+        is_manager = user.has_group('mrp.group_mrp_manager')
+
+        doc = etree.XML(res['arch'])
+
+        for node in doc.xpath("//field[@name='workorder_ids']"):
+            if not is_manager:
+                node.set(
+                        'attrs', str({
+                            'readonly': True
+                        })
+                    )
+
+        res['arch'] = etree.tostring(doc, encoding='unicode')
+        print(res['arch'])
+        return res
