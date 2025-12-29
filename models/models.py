@@ -15,6 +15,10 @@ class MrpWorkcenter(models.Model):
         string="Users",
     )
 
+    user_editable_time = fields.Boolean(
+        string='Time editable',
+        default=False,
+    )
 
 class MrpWorkOrder(models.Model):
     _inherit = "mrp.workorder"
@@ -22,6 +26,12 @@ class MrpWorkOrder(models.Model):
     allowed_user_ids = fields.Many2many(
         'res.users',
         related='workcenter_id.allowed_user_ids',
+        readonly=True,
+    )
+
+    user_editable_time = fields.Boolean(
+        string='Time editable',
+        related='workcenter_id.user_editable_time',
         readonly=True,
     )
 
@@ -93,8 +103,8 @@ class MrpWorkOrder(models.Model):
                         ]
                     })
                 )
-        
-        for node in doc.xpath("//field[@name='workcenter_id']"):
+
+        for node in doc.xpath("//field[@class='mark_as_readonly']"):
             if not is_manager:
                 node.set(
                         'attrs', str({
@@ -102,11 +112,11 @@ class MrpWorkOrder(models.Model):
                         })
                     )
         
-        for node in doc.xpath("//field[@name='name']"):
+        for node in doc.xpath("//field[@class='restrict_by_workcenter']"):
             if not is_manager:
                 node.set(
                         'attrs', str({
-                            'readonly': True
+                            'readonly': ['|', ('user_editable_time', '=', False), ('allowed_user_ids', 'not in', [user.id])]
                         })
                     )
 

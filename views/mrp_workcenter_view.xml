@@ -16,6 +16,9 @@
                     widget="many2many_tags"
                     options="{'no_create_edit': True}"
                 />
+                <field
+                    name="user_editable_time"
+                />
             </xpath>
         </field>
     </record>
@@ -25,12 +28,33 @@
         <field name="model">mrp.workorder</field>
         <field name="inherit_id" ref="mrp.mrp_production_workorder_tree_view" />
         <field name="arch" type="xml">
-            <field name="workcenter_id" position="after">
+            <field name="company_id" position="after">
                 <field name="allowed_user_ids" invisible="1"/>
+                <field name="user_editable_time" invisible="1"/>
+            </field>
+            <field name="workcenter_id" position="after">
                 <field name="worker"
                     class="worker_main"
                     options="{'no_create': True, 'no_create_edit': True}"
                 />
+            </field>
+            <field name="name" position="attributes">
+                <attribute name="class">mark_as_readonly</attribute>
+            </field>
+            <field name="workcenter_id" position="attributes">
+                <attribute name="class">mark_as_readonly</attribute>
+            </field>
+            <field name="date_planned_start" position="attributes">
+                <attribute name="class">mark_as_readonly</attribute>
+            </field>
+            <field name="date_planned_finished" position="attributes">
+                <attribute name="class">mark_as_readonly</attribute>
+            </field>
+            <field name="duration_expected" position="attributes">
+                <attribute name="class">restrict_by_workcenter</attribute>
+            </field>
+            <field name="duration" position="attributes">
+                <attribute name="class">restrict_by_workcenter</attribute>
             </field>
         </field>
     </record>
