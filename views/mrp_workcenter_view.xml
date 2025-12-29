@@ -38,24 +38,28 @@
                     options="{'no_create': True, 'no_create_edit': True}"
                 />
             </field>
-            <field name="name" position="attributes">
-                <attribute name="class">mark_as_readonly</attribute>
-            </field>
             <field name="workcenter_id" position="attributes">
-                <attribute name="class">mark_as_readonly</attribute>
+                <attribute name="class" add="mark_as_readonly"/>
             </field>
             <field name="date_planned_start" position="attributes">
-                <attribute name="class">mark_as_readonly</attribute>
+                <attribute name="class" add="mark_as_readonly"/>
             </field>
             <field name="date_planned_finished" position="attributes">
-                <attribute name="class">mark_as_readonly</attribute>
+                <attribute name="class" add="mark_as_readonly"/>
             </field>
             <field name="duration_expected" position="attributes">
-                <attribute name="class">restrict_by_workcenter</attribute>
+                <attribute name="class" add="restrict_by_workcenter"/>
             </field>
             <field name="duration" position="attributes">
-                <attribute name="class">restrict_by_workcenter</attribute>
+                <attribute name="class" add="restrict_by_workcenter"/>
             </field>
+
+            <xpath
+                expr="//field[@name='name' and not(@invisible)]"
+                position="attributes"
+            >
+                <attribute name="class" add="mark_as_readonly"/>
+            </xpath>
         </field>
     </record>
 
