@@ -121,7 +121,6 @@ class MrpWorkOrder(models.Model):
                     )
 
         res['arch'] = etree.tostring(doc, encoding='unicode')
-        print(res['arch'])
         return res
 
 
@@ -173,5 +172,4 @@ class MrpProduction(models.Model):
                     )
 
         res['arch'] = etree.tostring(doc, encoding='unicode')
-        print(res['arch'])
         return res
