@@ -41,24 +41,32 @@ class MrpWorkOrder(models.Model):
     )
 
     def button_start(self):
+        if self.env.context.get("bypass_workcenter_allowed"):
+            return super().button_start()
         if self.workcenter_id and self.env.user not in self.workcenter_id.allowed_user_ids:
             raise UserError(f"Немає доступу до робочого центру {self.workcenter_id.name}: button_start")
             return
         super().button_start()
 
     def button_finish(self):
+        if self.env.context.get("bypass_workcenter_allowed"):
+            return super().button_finish()
         if self.workcenter_id and self.env.user not in self.workcenter_id.allowed_user_ids:
             raise UserError(f"Немає доступу до робочого центру {self.workcenter_id.name}: button_finish")
             return
         super().button_finish()
 
     def button_pending(self):
+        if self.env.context.get("bypass_workcenter_allowed"):
+            return super().button_pending()
         if self.workcenter_id and self.env.user not in self.workcenter_id.allowed_user_ids:
             raise UserError(f"Немає доступу до робочого центру {self.workcenter_id.name}: button_pending")
             return
         super().button_pending()
     
     def button_unblock(self):
+        if self.env.context.get("bypass_workcenter_allowed"):
+            return super().button_unblock()
         if self.workcenter_id and self.env.user not in self.workcenter_id.allowed_user_ids:
             raise UserError(f"Немає доступу до робочого центру {self.workcenter_id.name}: button_unblock")
             return
@@ -129,6 +137,8 @@ class MrpWorkcenterProductivity(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        if self.env.context.get("bypass_workcenter_allowed"):
+            return super().create(vals_list)
         for vals in vals_list:
             workcenter_id = vals.get("workcenter_id")
             if workcenter_id:
@@ -139,6 +149,8 @@ class MrpWorkcenterProductivity(models.Model):
 
     def button_block(self):
         self.ensure_one()
+        if self.env.context.get("bypass_workcenter_allowed"):
+            return self.workcenter_id.order_ids.end_all()
         if self.workcenter_id and self.env.user not in self.workcenter_id.allowed_user_ids:
             # Optional: clean up the wizard record
             self.unlink()
